@@ -1,0 +1,144 @@
+#include <math.h>
+#include "SPDCircularGaussian.h"
+
+SPDCircularGaussian::~SPDCircularGaussian()
+{
+}
+
+SPDCircularGaussian::SPDCircularGaussian(const char * n, OutputType t, unsigned int width, unsigned int height, 
+				double sig, double cx, double cy, bool zeroOutside) :
+	IPLImageSource(n,t,1,width,height)
+{
+	zeroOut = zeroOutside;
+	negHalfInvSigmaSqr = -0.5/(sig*sig);
+	setImageCenter(cx,cy);
+}
+
+SPDCircularGaussian::SPDCircularGaussian(const char * n, OutputType t, unsigned int width, unsigned int height, 
+		double sig, bool zeroOutside) :
+	IPLImageSource(n,t,1,width,height)
+{
+	zeroOut = zeroOutside;
+	negHalfInvSigmaSqr = -0.5/(sig*sig);
+	setImageCenter(width/2.0,height/2.0);
+}
+
+void SPDCircularGaussian::readConfig(Config *config)
+{
+	double sigma = -sqrt(2*negHalfInvSigmaSqr);
+	config->getDouble("sigma",&sigma);
+	config->getBool("zeroOut",&zeroOut);
+	negHalfInvSigmaSqr = -0.5/(sigma*sigma);
+}
+
+bool SPDCircularGaussian::updateImageCenter()
+{
+	unsigned int i,j;
+	switch (out->type()) {
+		case Int8u:
+			{
+				IppiImage8u *O = out->as8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						if (zeroOut && r > O->width/2) {
+							(*O)(i,j) = 0;
+						} else {
+							(*O)(i,j) = (Ipp8u)(255*exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		case RGB8u:
+			{
+				IppiImageRGB8u *O = out->asRGB8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						Ipp8u *P = (*O)(i,j);
+						if (zeroOut && r > O->width/2) {
+							P[0] = P[1] = P[2] = 0;
+						} else {
+							P[0] = P[1] = P[2] = (Ipp8u)(255*exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		case RGBA8u:
+			{
+				IppiImageRGBA8u *O = out->asRGBA8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						Ipp8u *P = (*O)(i,j);
+						if (zeroOut && r > O->width/2) {
+							P[0] = P[1] = P[2] = P[3] =0;
+						} else {
+							P[0] = P[1] = P[2] = P[3] = (Ipp8u)(255*exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		case Int16s:
+			{
+				IppiImage16s *O = out->as16s();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						if (zeroOut && r > O->width/2) {
+							(*O)(i,j) = 0;
+						} else {
+							(*O)(i,j) = (Ipp16s)(255*exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		case Int32s:
+			{
+				IppiImage32s *O = out->as32s();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						if (zeroOut && r > O->width/2) {
+							(*O)(i,j) = 0;
+						} else {
+							(*O)(i,j) = (Ipp32s)(255*exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		case Float32:
+			{
+				IppiImage32f *O = out->as32f();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						double r = hypot(i-cx,j-cy);
+						if (zeroOut && r > O->width/2) {
+							(*O)(i,j) = 0;
+						} else {
+							(*O)(i,j) = (Ipp32f)(exp(negHalfInvSigmaSqr*(r*r)));
+						}
+					}
+				}
+				break;
+			}
+		default:
+			break;
+	}
+	return true;
+}
+
+bool SPDCircularGaussian::processInput()
+{
+	// this one is always ready, since it only output its image from
+	// memory
+	return true;
+}
+
+
+

@@ -1,0 +1,864 @@
+Terminals unused in grammar
+
+   TOK_STRING
+
+
+State 24 conflicts: 1 shift/reduce
+State 52 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: Configuration $end
+
+    1 $@1: /* empty */
+
+    2 Configuration: $@1 ConfigLine ConfigList
+
+    3 ConfigList: ConfigLine ConfigList
+    4           | /* empty */
+
+    5 Blank: Blank TOK_WSPACE
+    6      | /* empty */
+
+    7 $@2: /* empty */
+
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ Blank Value Blank TOK_NEWLINE
+
+    9 $@3: /* empty */
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+   11           | Blank TOK_NEWLINE
+   12           | error TOK_NEWLINE
+
+   13 SectionWord: TOK_INTEGER
+   14            | TOK_FLOAT
+   15            | TOK_TRUE
+   16            | TOK_FALSE
+   17            | TOK_WSPACE
+   18            | TOK_ID
+   19            | TOK_CHAR
+   20            | TOK_DOT
+
+   21 EndOfSectionId: /* empty */
+   22               | EndOfSectionId SectionWord
+
+   23 $@4: /* empty */
+
+   24 SectionId: TOK_ID $@4 EndOfSectionId
+
+   25 EndOfQualifiedID: TOK_DOT TOK_ID
+   26                 | /* empty */
+
+   27 $@5: /* empty */
+
+   28 QualifiedID: TOK_ID $@5 EndOfQualifiedID
+
+   29 DollaredID: TOK_DOLLAR QualifiedID
+
+   30 $@6: /* empty */
+
+   31 DollaredID: TOK_DOLLAR TOK_BRACE_OPEN QualifiedID $@6 TOK_BRACE_CLOSE
+
+   32 Word1: TOK_INTEGER
+   33      | TOK_FLOAT
+   34      | TOK_TRUE
+   35      | TOK_FALSE
+   36      | TOK_EQ
+   37      | TOK_WSPACE
+   38      | TOK_ID
+   39      | TOK_CHAR
+   40      | TOK_DOT
+   41      | TOK_BRACKET_OPEN
+   42      | TOK_BRACKET_CLOSE
+   43      | TOK_BRACE_OPEN
+   44      | TOK_BRACE_CLOSE
+
+   45 Word: Word1
+   46     | DollaredID
+   47     | TOK_ESCCHAR
+
+   48 CharList: /* empty */
+   49         | CharList Word
+
+   50 $@7: /* empty */
+
+   51 String: TOK_DQUOTE $@7 CharList TOK_DQUOTE
+
+   52 Value: DollaredID
+   53      | TOK_INTEGER
+   54      | TOK_FLOAT
+   55      | BoolValue
+   56      | String
+
+   57 BoolValue: TOK_TRUE
+   58          | TOK_FALSE
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256) 12
+TOK_STRING (258)
+TOK_TRUE (259) 15 34 57
+TOK_FALSE (260) 16 35 58
+TOK_EQ (261) 8 36
+TOK_DOLLAR (262) 29 31
+TOK_ID (263) 8 18 24 25 28 38
+TOK_NEWLINE (264) 8 10 11 12
+TOK_DQUOTE (265) 51
+TOK_ESCCHAR (266) 47
+TOK_CHAR (267) 19 39
+TOK_FLOAT (268) 14 33 54
+TOK_INTEGER (269) 13 32 53
+TOK_WSPACE (270) 5 17 37
+TOK_DOT (271) 20 25 40
+TOK_BRACKET_OPEN (272) 10 41
+TOK_BRACKET_CLOSE (273) 10 42
+TOK_BRACE_OPEN (274) 31 43
+TOK_BRACE_CLOSE (275) 31 44
+
+
+Nonterminals, with rules where they appear
+
+$accept (21)
+    on left: 0
+Configuration (22)
+    on left: 2, on right: 0
+$@1 (23)
+    on left: 1, on right: 2
+ConfigList (24)
+    on left: 3 4, on right: 2 3
+Blank (25)
+    on left: 5 6, on right: 5 8 10 11
+ConfigLine (26)
+    on left: 8 10 11 12, on right: 2 3
+$@2 (27)
+    on left: 7, on right: 8
+$@3 (28)
+    on left: 9, on right: 10
+SectionWord (29)
+    on left: 13 14 15 16 17 18 19 20, on right: 22
+EndOfSectionId (30)
+    on left: 21 22, on right: 22 24
+SectionId (31)
+    on left: 24, on right: 10
+$@4 (32)
+    on left: 23, on right: 24
+EndOfQualifiedID (33)
+    on left: 25 26, on right: 28
+QualifiedID (34)
+    on left: 28, on right: 29 31
+$@5 (35)
+    on left: 27, on right: 28
+DollaredID (36)
+    on left: 29 31, on right: 46 52
+$@6 (37)
+    on left: 30, on right: 31
+Word1 (38)
+    on left: 32 33 34 35 36 37 38 39 40 41 42 43 44, on right: 45
+Word (39)
+    on left: 45 46 47, on right: 49
+CharList (40)
+    on left: 48 49, on right: 49 51
+String (41)
+    on left: 51, on right: 56
+$@7 (42)
+    on left: 50, on right: 51
+Value (43)
+    on left: 52 53 54 55 56, on right: 8
+BoolValue (44)
+    on left: 57 58, on right: 55
+
+
+state 0
+
+    0 $accept: . Configuration $end
+
+    $default  reduce using rule 1 ($@1)
+
+    Configuration  go to state 1
+    $@1            go to state 2
+
+
+state 1
+
+    0 $accept: Configuration . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    2 Configuration: $@1 . ConfigLine ConfigList
+
+    error  shift, and go to state 4
+
+    TOK_ID            reduce using rule 6 (Blank)
+    TOK_NEWLINE       reduce using rule 6 (Blank)
+    TOK_WSPACE        reduce using rule 6 (Blank)
+    TOK_BRACKET_OPEN  reduce using rule 6 (Blank)
+
+    Blank       go to state 5
+    ConfigLine  go to state 6
+
+
+state 3
+
+    0 $accept: Configuration $end .
+
+    $default  accept
+
+
+state 4
+
+   12 ConfigLine: error . TOK_NEWLINE
+
+    TOK_NEWLINE  shift, and go to state 7
+
+
+state 5
+
+    5 Blank: Blank . TOK_WSPACE
+    8 ConfigLine: Blank . TOK_ID $@2 Blank TOK_EQ Blank Value Blank TOK_NEWLINE
+   10           | Blank . TOK_BRACKET_OPEN Blank SectionId $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+   11           | Blank . TOK_NEWLINE
+
+    TOK_ID            shift, and go to state 8
+    TOK_NEWLINE       shift, and go to state 9
+    TOK_WSPACE        shift, and go to state 10
+    TOK_BRACKET_OPEN  shift, and go to state 11
+
+
+state 6
+
+    2 Configuration: $@1 ConfigLine . ConfigList
+
+    error  shift, and go to state 4
+
+    $end              reduce using rule 4 (ConfigList)
+    TOK_ID            reduce using rule 6 (Blank)
+    TOK_NEWLINE       reduce using rule 6 (Blank)
+    TOK_WSPACE        reduce using rule 6 (Blank)
+    TOK_BRACKET_OPEN  reduce using rule 6 (Blank)
+
+    ConfigList  go to state 12
+    Blank       go to state 5
+    ConfigLine  go to state 13
+
+
+state 7
+
+   12 ConfigLine: error TOK_NEWLINE .
+
+    $default  reduce using rule 12 (ConfigLine)
+
+
+state 8
+
+    8 ConfigLine: Blank TOK_ID . $@2 Blank TOK_EQ Blank Value Blank TOK_NEWLINE
+
+    $default  reduce using rule 7 ($@2)
+
+    $@2  go to state 14
+
+
+state 9
+
+   11 ConfigLine: Blank TOK_NEWLINE .
+
+    $default  reduce using rule 11 (ConfigLine)
+
+
+state 10
+
+    5 Blank: Blank TOK_WSPACE .
+
+    $default  reduce using rule 5 (Blank)
+
+
+state 11
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN . Blank SectionId $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 15
+
+
+state 12
+
+    2 Configuration: $@1 ConfigLine ConfigList .
+
+    $default  reduce using rule 2 (Configuration)
+
+
+state 13
+
+    3 ConfigList: ConfigLine . ConfigList
+
+    error  shift, and go to state 4
+
+    $end              reduce using rule 4 (ConfigList)
+    TOK_ID            reduce using rule 6 (Blank)
+    TOK_NEWLINE       reduce using rule 6 (Blank)
+    TOK_WSPACE        reduce using rule 6 (Blank)
+    TOK_BRACKET_OPEN  reduce using rule 6 (Blank)
+
+    ConfigList  go to state 16
+    Blank       go to state 5
+    ConfigLine  go to state 13
+
+
+state 14
+
+    8 ConfigLine: Blank TOK_ID $@2 . Blank TOK_EQ Blank Value Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 17
+
+
+state 15
+
+    5 Blank: Blank . TOK_WSPACE
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank . SectionId $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+
+    TOK_ID      shift, and go to state 18
+    TOK_WSPACE  shift, and go to state 10
+
+    SectionId  go to state 19
+
+
+state 16
+
+    3 ConfigList: ConfigLine ConfigList .
+
+    $default  reduce using rule 3 (ConfigList)
+
+
+state 17
+
+    5 Blank: Blank . TOK_WSPACE
+    8 ConfigLine: Blank TOK_ID $@2 Blank . TOK_EQ Blank Value Blank TOK_NEWLINE
+
+    TOK_EQ      shift, and go to state 20
+    TOK_WSPACE  shift, and go to state 10
+
+
+state 18
+
+   24 SectionId: TOK_ID . $@4 EndOfSectionId
+
+    $default  reduce using rule 23 ($@4)
+
+    $@4  go to state 21
+
+
+state 19
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId . $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+
+    $default  reduce using rule 9 ($@3)
+
+    $@3  go to state 22
+
+
+state 20
+
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ . Blank Value Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 23
+
+
+state 21
+
+   24 SectionId: TOK_ID $@4 . EndOfSectionId
+
+    $default  reduce using rule 21 (EndOfSectionId)
+
+    EndOfSectionId  go to state 24
+
+
+state 22
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 . Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 25
+
+
+state 23
+
+    5 Blank: Blank . TOK_WSPACE
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ Blank . Value Blank TOK_NEWLINE
+
+    TOK_TRUE     shift, and go to state 26
+    TOK_FALSE    shift, and go to state 27
+    TOK_DOLLAR   shift, and go to state 28
+    TOK_DQUOTE   shift, and go to state 29
+    TOK_FLOAT    shift, and go to state 30
+    TOK_INTEGER  shift, and go to state 31
+    TOK_WSPACE   shift, and go to state 10
+
+    DollaredID  go to state 32
+    String      go to state 33
+    Value       go to state 34
+    BoolValue   go to state 35
+
+
+state 24
+
+   22 EndOfSectionId: EndOfSectionId . SectionWord
+   24 SectionId: TOK_ID $@4 EndOfSectionId .
+
+    TOK_TRUE     shift, and go to state 36
+    TOK_FALSE    shift, and go to state 37
+    TOK_ID       shift, and go to state 38
+    TOK_CHAR     shift, and go to state 39
+    TOK_FLOAT    shift, and go to state 40
+    TOK_INTEGER  shift, and go to state 41
+    TOK_WSPACE   shift, and go to state 42
+    TOK_DOT      shift, and go to state 43
+
+    TOK_WSPACE  [reduce using rule 24 (SectionId)]
+    $default    reduce using rule 24 (SectionId)
+
+    SectionWord  go to state 44
+
+
+state 25
+
+    5 Blank: Blank . TOK_WSPACE
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 Blank . TOK_BRACKET_CLOSE Blank TOK_NEWLINE
+
+    TOK_WSPACE         shift, and go to state 10
+    TOK_BRACKET_CLOSE  shift, and go to state 45
+
+
+state 26
+
+   57 BoolValue: TOK_TRUE .
+
+    $default  reduce using rule 57 (BoolValue)
+
+
+state 27
+
+   58 BoolValue: TOK_FALSE .
+
+    $default  reduce using rule 58 (BoolValue)
+
+
+state 28
+
+   29 DollaredID: TOK_DOLLAR . QualifiedID
+   31           | TOK_DOLLAR . TOK_BRACE_OPEN QualifiedID $@6 TOK_BRACE_CLOSE
+
+    TOK_ID          shift, and go to state 46
+    TOK_BRACE_OPEN  shift, and go to state 47
+
+    QualifiedID  go to state 48
+
+
+state 29
+
+   51 String: TOK_DQUOTE . $@7 CharList TOK_DQUOTE
+
+    $default  reduce using rule 50 ($@7)
+
+    $@7  go to state 49
+
+
+state 30
+
+   54 Value: TOK_FLOAT .
+
+    $default  reduce using rule 54 (Value)
+
+
+state 31
+
+   53 Value: TOK_INTEGER .
+
+    $default  reduce using rule 53 (Value)
+
+
+state 32
+
+   52 Value: DollaredID .
+
+    $default  reduce using rule 52 (Value)
+
+
+state 33
+
+   56 Value: String .
+
+    $default  reduce using rule 56 (Value)
+
+
+state 34
+
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ Blank Value . Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 50
+
+
+state 35
+
+   55 Value: BoolValue .
+
+    $default  reduce using rule 55 (Value)
+
+
+state 36
+
+   15 SectionWord: TOK_TRUE .
+
+    $default  reduce using rule 15 (SectionWord)
+
+
+state 37
+
+   16 SectionWord: TOK_FALSE .
+
+    $default  reduce using rule 16 (SectionWord)
+
+
+state 38
+
+   18 SectionWord: TOK_ID .
+
+    $default  reduce using rule 18 (SectionWord)
+
+
+state 39
+
+   19 SectionWord: TOK_CHAR .
+
+    $default  reduce using rule 19 (SectionWord)
+
+
+state 40
+
+   14 SectionWord: TOK_FLOAT .
+
+    $default  reduce using rule 14 (SectionWord)
+
+
+state 41
+
+   13 SectionWord: TOK_INTEGER .
+
+    $default  reduce using rule 13 (SectionWord)
+
+
+state 42
+
+   17 SectionWord: TOK_WSPACE .
+
+    $default  reduce using rule 17 (SectionWord)
+
+
+state 43
+
+   20 SectionWord: TOK_DOT .
+
+    $default  reduce using rule 20 (SectionWord)
+
+
+state 44
+
+   22 EndOfSectionId: EndOfSectionId SectionWord .
+
+    $default  reduce using rule 22 (EndOfSectionId)
+
+
+state 45
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 Blank TOK_BRACKET_CLOSE . Blank TOK_NEWLINE
+
+    $default  reduce using rule 6 (Blank)
+
+    Blank  go to state 51
+
+
+state 46
+
+   28 QualifiedID: TOK_ID . $@5 EndOfQualifiedID
+
+    $default  reduce using rule 27 ($@5)
+
+    $@5  go to state 52
+
+
+state 47
+
+   31 DollaredID: TOK_DOLLAR TOK_BRACE_OPEN . QualifiedID $@6 TOK_BRACE_CLOSE
+
+    TOK_ID  shift, and go to state 46
+
+    QualifiedID  go to state 53
+
+
+state 48
+
+   29 DollaredID: TOK_DOLLAR QualifiedID .
+
+    $default  reduce using rule 29 (DollaredID)
+
+
+state 49
+
+   51 String: TOK_DQUOTE $@7 . CharList TOK_DQUOTE
+
+    $default  reduce using rule 48 (CharList)
+
+    CharList  go to state 54
+
+
+state 50
+
+    5 Blank: Blank . TOK_WSPACE
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ Blank Value Blank . TOK_NEWLINE
+
+    TOK_NEWLINE  shift, and go to state 55
+    TOK_WSPACE   shift, and go to state 10
+
+
+state 51
+
+    5 Blank: Blank . TOK_WSPACE
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 Blank TOK_BRACKET_CLOSE Blank . TOK_NEWLINE
+
+    TOK_NEWLINE  shift, and go to state 56
+    TOK_WSPACE   shift, and go to state 10
+
+
+state 52
+
+   28 QualifiedID: TOK_ID $@5 . EndOfQualifiedID
+
+    TOK_DOT  shift, and go to state 57
+
+    TOK_DOT   [reduce using rule 26 (EndOfQualifiedID)]
+    $default  reduce using rule 26 (EndOfQualifiedID)
+
+    EndOfQualifiedID  go to state 58
+
+
+state 53
+
+   31 DollaredID: TOK_DOLLAR TOK_BRACE_OPEN QualifiedID . $@6 TOK_BRACE_CLOSE
+
+    $default  reduce using rule 30 ($@6)
+
+    $@6  go to state 59
+
+
+state 54
+
+   49 CharList: CharList . Word
+   51 String: TOK_DQUOTE $@7 CharList . TOK_DQUOTE
+
+    TOK_TRUE           shift, and go to state 60
+    TOK_FALSE          shift, and go to state 61
+    TOK_EQ             shift, and go to state 62
+    TOK_DOLLAR         shift, and go to state 28
+    TOK_ID             shift, and go to state 63
+    TOK_DQUOTE         shift, and go to state 64
+    TOK_ESCCHAR        shift, and go to state 65
+    TOK_CHAR           shift, and go to state 66
+    TOK_FLOAT          shift, and go to state 67
+    TOK_INTEGER        shift, and go to state 68
+    TOK_WSPACE         shift, and go to state 69
+    TOK_DOT            shift, and go to state 70
+    TOK_BRACKET_OPEN   shift, and go to state 71
+    TOK_BRACKET_CLOSE  shift, and go to state 72
+    TOK_BRACE_OPEN     shift, and go to state 73
+    TOK_BRACE_CLOSE    shift, and go to state 74
+
+    DollaredID  go to state 75
+    Word1       go to state 76
+    Word        go to state 77
+
+
+state 55
+
+    8 ConfigLine: Blank TOK_ID $@2 Blank TOK_EQ Blank Value Blank TOK_NEWLINE .
+
+    $default  reduce using rule 8 (ConfigLine)
+
+
+state 56
+
+   10 ConfigLine: Blank TOK_BRACKET_OPEN Blank SectionId $@3 Blank TOK_BRACKET_CLOSE Blank TOK_NEWLINE .
+
+    $default  reduce using rule 10 (ConfigLine)
+
+
+state 57
+
+   25 EndOfQualifiedID: TOK_DOT . TOK_ID
+
+    TOK_ID  shift, and go to state 78
+
+
+state 58
+
+   28 QualifiedID: TOK_ID $@5 EndOfQualifiedID .
+
+    $default  reduce using rule 28 (QualifiedID)
+
+
+state 59
+
+   31 DollaredID: TOK_DOLLAR TOK_BRACE_OPEN QualifiedID $@6 . TOK_BRACE_CLOSE
+
+    TOK_BRACE_CLOSE  shift, and go to state 79
+
+
+state 60
+
+   34 Word1: TOK_TRUE .
+
+    $default  reduce using rule 34 (Word1)
+
+
+state 61
+
+   35 Word1: TOK_FALSE .
+
+    $default  reduce using rule 35 (Word1)
+
+
+state 62
+
+   36 Word1: TOK_EQ .
+
+    $default  reduce using rule 36 (Word1)
+
+
+state 63
+
+   38 Word1: TOK_ID .
+
+    $default  reduce using rule 38 (Word1)
+
+
+state 64
+
+   51 String: TOK_DQUOTE $@7 CharList TOK_DQUOTE .
+
+    $default  reduce using rule 51 (String)
+
+
+state 65
+
+   47 Word: TOK_ESCCHAR .
+
+    $default  reduce using rule 47 (Word)
+
+
+state 66
+
+   39 Word1: TOK_CHAR .
+
+    $default  reduce using rule 39 (Word1)
+
+
+state 67
+
+   33 Word1: TOK_FLOAT .
+
+    $default  reduce using rule 33 (Word1)
+
+
+state 68
+
+   32 Word1: TOK_INTEGER .
+
+    $default  reduce using rule 32 (Word1)
+
+
+state 69
+
+   37 Word1: TOK_WSPACE .
+
+    $default  reduce using rule 37 (Word1)
+
+
+state 70
+
+   40 Word1: TOK_DOT .
+
+    $default  reduce using rule 40 (Word1)
+
+
+state 71
+
+   41 Word1: TOK_BRACKET_OPEN .
+
+    $default  reduce using rule 41 (Word1)
+
+
+state 72
+
+   42 Word1: TOK_BRACKET_CLOSE .
+
+    $default  reduce using rule 42 (Word1)
+
+
+state 73
+
+   43 Word1: TOK_BRACE_OPEN .
+
+    $default  reduce using rule 43 (Word1)
+
+
+state 74
+
+   44 Word1: TOK_BRACE_CLOSE .
+
+    $default  reduce using rule 44 (Word1)
+
+
+state 75
+
+   46 Word: DollaredID .
+
+    $default  reduce using rule 46 (Word)
+
+
+state 76
+
+   45 Word: Word1 .
+
+    $default  reduce using rule 45 (Word)
+
+
+state 77
+
+   49 CharList: CharList Word .
+
+    $default  reduce using rule 49 (CharList)
+
+
+state 78
+
+   25 EndOfQualifiedID: TOK_DOT TOK_ID .
+
+    $default  reduce using rule 25 (EndOfQualifiedID)
+
+
+state 79
+
+   31 DollaredID: TOK_DOLLAR TOK_BRACE_OPEN QualifiedID $@6 TOK_BRACE_CLOSE .
+
+    $default  reduce using rule 31 (DollaredID)

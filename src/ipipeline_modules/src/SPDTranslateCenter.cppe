@@ -1,0 +1,143 @@
+
+#include "SPDTranslateCenter.h"
+
+SPDTranslateCenter::SPDTranslateCenter(const char * n) : 
+	IPLImageFilter(n)
+{
+	centerPosId = addInput("Center Pos");
+}
+
+bool SPDTranslateCenter::checkInput() const 
+{
+	IPLImageProcessor * input = getInput(deftInput);
+	const ImageProcessorOutput * in = input->getOutput();
+	if (!in->checkType()) return error(INCONSISTENT_TYPE);
+	switch (in->type()) {
+		case RGBA8u:
+		case RGB8u:
+		case Int8u:
+		case Int16s:
+		case Int16u:
+		case Int32s:
+		case Float32:
+			break;
+		default : 
+			return error(INVALID_TYPE);
+	}
+	IPLImageProcessor * inpos = getInput(centerPosId);
+	const ImageProcessorOutput * inp = inpos->getOutput();
+	if (!inp->checkType()) return error(INCONSISTENT_TYPE);
+	switch (inp->type()) {
+		case Int16s:
+			break;
+		default : 
+			return error(INVALID_TYPE);
+	}
+	const IppiImage16s * I = inp->as16s();
+	if ((I->width!=3) || (I->height!=1)) return error(INVALID_IMAGE_SIZE);
+	return true;
+}
+
+template <class Pixel, class Image, int Channels,IppStatus (*_copy)(const Pixel*,int,Pixel*,int,IppiSize)>
+void translate(Image *O,const Image *I, unsigned int nimg,
+		signed int xc, signed int yc, signed int vc)
+{
+	unsigned int o_xoffset, o_yoffset;
+	unsigned int i_xoffset, i_yoffset;
+	IppiSize size = {0,0};
+	for (unsigned int i=0;i<nimg;i++) {
+		if (vc > 0) {
+			signed int ixc=I[i].width/2;
+			signed int iyc=I[i].height/2;
+			if (xc > ixc) {
+				o_xoffset = 0;
+				i_xoffset = xc - ixc;
+				size.width = I[i].width - i_xoffset;
+			} else {
+				i_xoffset = 0;
+				o_xoffset = ixc - xc;
+				size.width = I[i].width - o_xoffset;
+			}
+			if (yc > iyc) {
+				o_yoffset = 0;
+				i_yoffset = yc - iyc;
+				size.height = I[i].height - i_yoffset;
+			} else {
+				i_yoffset = 0;
+				o_yoffset = iyc - yc;
+				size.height = I[i].height - o_yoffset;
+			}
+#if 0
+			printf("X %d %d %d Y %d %d %d\n",
+					i_xoffset,o_xoffset,size.width,
+					i_yoffset,o_yoffset,size.height);
+#endif
+			O[i].clear();
+		} else {
+			i_xoffset = i_yoffset = 0;
+			o_xoffset = o_yoffset = 0;
+			size = I[i].size;
+		}
+		_copy(I[i].line(i_yoffset)+i_xoffset*Channels,I[i].bstep, 
+				O[i].line(o_yoffset)+o_xoffset*Channels, O[i].bstep, size);
+	}
+}
+
+
+bool SPDTranslateCenter::processInput()
+{
+	IPLImageProcessor * input = getInput(deftInput);
+	const IppiImage * in = input->getOutput()->asImage();
+	IPLImageProcessor * inpos = getInput(centerPosId);
+	const IppiImage16s * pos = inpos->getOutput16s();
+	signed int xc,yc,vc;
+	xc = (*pos)(0,0);
+	yc = (*pos)(1,0);
+	vc = (*pos)(2,0);
+	// printf("%s: translating to %d,%d (%d)\n",name,xc,yc,vc);
+
+	reallocate(in,input->nimages);
+
+	switch (in->type()) {
+		case Int8u :
+			{
+				translate<Ipp8u,IppiImage8u,1,ippiCopy_8u_C1R>(out->as8u(),in->as8u(), input->nimages,xc, yc, vc);
+				break;
+			}
+		case Int16s :
+			{
+				translate<Ipp16s,IppiImage16s,1,ippiCopy_16s_C1R>(out->as16s(),in->as16s(), input->nimages,xc, yc, vc);
+				break;                                                      
+			}                                                               
+		case Int16u :                                                       
+			{                                                               
+				translate<Ipp16u,IppiImage16u,1,ippiCopy_16u_C1R>(out->as16u(),in->as16u(), input->nimages,xc, yc, vc);
+				break;                                                      
+			}                                                               
+		case Int32s :                                                       
+			{                                                               
+				translate<Ipp32s,IppiImage32s,1,ippiCopy_32s_C1R>(out->as32s(),in->as32s(), input->nimages,xc, yc, vc);
+				break;                                                      
+			}                                                               
+		case Float32 :                                                      
+			{                                                               
+				translate<Ipp32f,IppiImage32f,1,ippiCopy_32f_C1R>(out->as32f(),in->as32f(), input->nimages,xc, yc, vc);
+				break;
+			}
+		case RGB8u :
+			{
+				translate<Ipp8u,IppiImageRGB8u,3,ippiCopy_8u_C3R>(out->asRGB8u(),in->asRGB8u(), input->nimages,xc, yc, vc);
+				break;
+			}
+		case RGBA8u :
+			{
+				translate<Ipp8u,IppiImageRGBA8u,4,ippiCopy_8u_C4R>(out->asRGBA8u(),in->asRGBA8u(), input->nimages,xc, yc, vc);
+				break;
+			}
+		default :
+			// not possible after checkinput
+			break;
+	}
+	return true;
+}
+

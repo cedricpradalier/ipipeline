@@ -1,0 +1,188 @@
+#include <math.h>
+#include "SPDCircularMask.h"
+
+SPDCircularMask::~SPDCircularMask()
+{
+}
+
+
+SPDCircularMask::SPDCircularMask(const char * n, OutputType t, 
+		unsigned int width, unsigned int height, 
+		unsigned int deltax, unsigned int deltay, 
+		double outterRad, double innerRad) :
+	IPLImageSourceWithView(n,t,1,width+2*deltax,height+2*deltay,width,height)
+{
+	outcx = width/2+deltax;
+	outcy = height/2+deltay;
+	// printf("CMask center: %f %f\n",outcx,outcy);
+	outRad = outterRad;
+	inRad = innerRad;
+	deadzones.clear();
+	buildSourceImage();
+	setImageCenter(width/2.0,height/2.0);
+	// printf("SPDCircularMask: %s: %dx%d view %dx%d\n",name,width+2*deltax,height+2*deltay,width,height);
+	// out->asImage()->printState(name);
+}
+
+SPDCircularMask::SPDCircularMask(const char * n, OutputType t, 
+		unsigned int width, unsigned int height, 
+		unsigned int deltax, unsigned int deltay, 
+		double outterRad, double innerRad,
+		const std::vector<DeadZone> & dzones) :
+	IPLImageSourceWithView(n,t,1,width+2*deltax,height+2*deltay,width,height)
+{
+	outcx = width/2+deltax;
+	outcy = height/2+deltay;
+	// printf("CMask center: %f %f\n",outcx,outcy);
+	outRad = outterRad;
+	inRad = innerRad;
+	deadzones = dzones;
+	buildSourceImage();
+	setImageCenter(width/2.0,height/2.0);
+	// printf("SPDCircularMask: %s: %dx%d view %dx%d\n",name,width+2*deltax,height+2*deltay,width,height);
+	// out->asImage()->printState(name);
+}
+
+bool SPDCircularMask::updateImageCenter()
+{
+	IppiImage *O = out->asImage();
+	outcx = O->width/2;
+	outcy = O->height/2;
+	double x,y;
+	assert(cx < O->width);
+	assert(cy < O->height);
+	x = outcx - cx;
+	y = outcy - cy;
+	this->setView((int)x,(int)y);
+	return true;
+}
+
+bool SPDCircularMask::testPixel(unsigned int i, unsigned int j) const
+{
+	unsigned int k;
+	double r = hypot(i-outcx,j-outcy);
+	double alpha = atan2(j-outcy,i-outcx);
+	if ((r < inRad) || (r > outRad)) return false;
+	for (k=0;k<deadzones.size();k++) {
+		if (fabs(remainder(alpha-deadzones[k].angleCenter,2*M_PI)) < 
+				deadzones[k].angleWidth) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool SPDCircularMask::buildSourceImage()
+{
+	unsigned int i,j;
+	// Here we don't use the variable center, because the variable center will
+	// be used when changing the view
+	switch (out->type()) {
+		case Int8u:
+			{
+				IppiImage8u *O = out->as8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						(*O)(i,j) = testPixel(i,j)?255:0;
+					}
+				}
+				break;
+			}
+		case RGB8u:
+			{
+				IppiImageRGB8u *O = out->asRGB8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						Ipp8u *P = (*O)(i,j);
+						P[0] = P[1] = P[2] = testPixel(i,j)?255:0;
+					}
+				}
+				break;
+			}
+		case RGBA8u:
+			{
+				IppiImageRGBA8u *O = out->asRGBA8u();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						Ipp8u *P = (*O)(i,j);
+						P[0] = P[1] = P[2] = P[3] = testPixel(i,j)?255:0;
+					}
+				}
+				break;
+			}
+		case Int16s:
+			{
+				IppiImage16s *O = out->as16s();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						(*O)(i,j) = testPixel(i,j)?255:0;
+					}
+				}
+				break;
+			}
+		case Int32s:
+			{
+				IppiImage32s *O = out->as32s();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						(*O)(i,j) = testPixel(i,j)?255:0;
+					}
+				}
+				break;
+			}
+		case Float32:
+			{
+				IppiImage32f *O = out->as32f();
+				for (j=0;j<O->height;j++) {
+					for (i=0;i<O->width;i++) {
+						(*O)(i,j) = testPixel(i,j)?255.0:0.0;
+					}
+				}
+				break;
+			}
+		default:
+			break;
+	}
+	// out->asImage()->saveAsMatrix(name);
+	return true;
+}
+
+bool SPDCircularMask::processInput()
+{
+	if(!IPLImageSourceWithView::processInput()) {
+		return false;
+	}
+	// out->asImage()->saveAsMatrix(std::string(name)+"_out.mat");
+	// view->saveAsMatrix(std::string(name)+"_view.mat");
+	return true;
+}
+
+void SPDCircularMask::readConfig(Config * cfg) 
+{
+	unsigned int i;
+	deadzones.clear();
+	cfg->getDouble("innerRad",&inRad);
+	cfg->getDouble("outterRad",&outRad);
+	i = 0;
+	while (1) {
+		DeadZone dz;
+		char varname[128];
+		sprintf(varname,"deadZoneAngle%d",i);
+		if (!cfg->getDouble(varname,&dz.angleCenter)) {
+			break;
+		}
+		dz.angleCenter *= M_PI/180;
+
+		sprintf(varname,"deadZoneWidth%d",i);
+		if (!cfg->getDouble(varname,&dz.angleWidth)) {
+			break;
+		}
+		dz.angleWidth *= M_PI/180;
+
+		deadzones.push_back(dz);
+		i++;
+	}
+	buildSourceImage();
+}
+
+
