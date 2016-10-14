@@ -61,7 +61,7 @@ IPLImageProcessor::~IPLImageProcessor()
 
 void IPLImageProcessor::print(FILE * fp) {
 	fprintf(fp,"%03d -IP %s : %d images / frame %d\n",id,
-			name,outputVector.size(),frameid);
+			name,(int)outputVector.size(),(int)frameid);
 }
 
 void IPLImageProcessor::setFrameId(unsigned int i) {
@@ -399,13 +399,13 @@ std::string IPLImageProcessor::createOutputTypeStr(const cv::Mat & m) const
     char tmp[64];
     std::string txt;
     switch (m.type() & CV_MAT_DEPTH_MASK) {
-        case CV_8U  : txt += "CV_8UC" ; break;
-        case CV_8S  : txt += "CV_8SC" ; break;
-        case CV_16U : txt += "CV_16UC"; break;
-        case CV_16S : txt += "CV_16SC"; break;
-        case CV_32S : txt += "CV_32SC"; break;
-        case CV_32F : txt += "CV_32FC"; break;
-        case CV_64F : txt += "CV_64FC"; break;
+        case CV_8U  : txt += "8UC" ; break;
+        case CV_8S  : txt += "8SC" ; break;
+        case CV_16U : txt += "16UC"; break;
+        case CV_16S : txt += "16SC"; break;
+        case CV_32S : txt += "32SC"; break;
+        case CV_32F : txt += "32FC"; break;
+        case CV_64F : txt += "64FC"; break;
         default: break;
     }
     sprintf(tmp,"%d: %dx%d",m.type() >> CV_CN_SHIFT,m.cols,m.rows);
